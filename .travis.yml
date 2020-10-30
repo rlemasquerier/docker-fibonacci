@@ -1,0 +1,19 @@
+sudo: required
+services:
+  - docker
+before_install:
+  - docker build -t rlemasquerier/react-test -f ./client/Dockerfile.dev ./client
+script:
+  - docker run -e CI=true rlemasquerier/react-test yarn test
+after_success:
+  - docker build -t rlemasquerier/fibonacci-client ./client
+  - docker build -t rlemasquerier/fibonacci-nginx ./nginx
+  - docker build -t rlemasquerier/fibonacci-server ./server
+  - docker build -t rlemasquerier/fibonacci-worker ./worker
+  # Log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Push images to docker hub
+  - docker push rlemasquerier/fibonacci-client
+  - docker push rlemasquerier/fibonacci-nginx
+  - docker push rlemasquerier/fibonacci-server
+  - docker push rlemasquerier/fibonacci-worker
